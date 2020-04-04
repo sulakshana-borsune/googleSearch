@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -22,18 +22,19 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import FolderIcon from '@material-ui/icons/Folder';
 import DeleteIcon from '@material-ui/icons/Delete';
-
-
+import SvgIcon from '@material-ui/core/SvgIcon';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 const useStyles = makeStyles((theme) => ({
 
-    root: {
-      maxWidth: 345,
-    },
-    media: {
-      height: 140,
-    },
-  
+  root: {
+    maxWidth: 345,
+  },
+  media: {
+    height: 140,
+  },
+
   grow: {
     flexGrow: 1,
   },
@@ -46,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
       display: 'block',
     },
   },
-  
+
   search: {
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
@@ -105,104 +106,122 @@ function generate(element) {
     }),
   );
 }
+function HomeIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+    </SvgIcon>
+  );
+}
+
 
 export default function PrimarySearchAppBar() {
   const classes = useStyles();
   const [searchState, setSearchState] = useState({
-      searchedBooks: [],
-      books:  [],
-      title: '',
-      searchInput: ''
-   })
-   const [dense, setDense] = React.useState(false);
-   const [secondary, setSecondary] = React.useState(false);
- 
+    searchedBooks: [],
+    books: [],
+    title: '',
+    searchInput: ''
+  })
+  const [dense, setDense] = React.useState(false);
+  const [secondary, setSecondary] = React.useState(false);
 
-  const  handleInputChange = ({target}) => {
-    setSearchState({...searchState, [target.name]:target.value})
+
+  const handleInputChange = ({ target }) => {
+    setSearchState({ ...searchState, [target.name]: target.value })
   }
-  
+
   const handleBookSearch = (event) => {
     event.preventDefault()
     axios.get(`https://www.googleapis.com/books/v1/volumes?q=harrypotter&key=AIzaSyCBfI-nk1JQ3Vcd76JFvoZGY8QRrX4SULc`)
-    .then(({ data: { items } }) => {
-      console.log(items.volumeInfo)
-      console.log(items[0].volumeInfo.title, items[0].volumeInfo.authors)
+      .then(({ data: { items } }) => {
+        console.log(items)
+        console.log(items[0].volumeInfo.title, items[0].volumeInfo.authors)
 
-      let bookObj = items.map(obj => obj.volumeInfo)
-    setSearchState({...useState.books, searchInput: '', searchedBooks: bookObj })
-     })
-    .catch(e => console.error(e))
+        let bookObj = items.map(obj => obj.volumeInfo)
+        setSearchState({ ...useState.books, searchInput: '', searchedBooks: bookObj })
+      })
+      .catch(e => console.error(e))
   }
 
   const handleSaveBook = i => {
     let savedBook = JSON.parse(JSON.stringify(useState.searchedBooks[i]))
-  let books = JSON.parse(JSON.stringify(searchState.books))
-Book.create(savedBook)
-useState.books.push(savedBook)
-setSearchState({...searchState, books})
-  }
-const handleDeleteBook = (id) => {
-  Book.delete(id) 
-  .then(() => {
     let books = JSON.parse(JSON.stringify(searchState.books))
-    setSearchState({...searchState, books})
-  })
-  .catch(e => console.error(e))
-}
+    Book.create(savedBook)
+    useState.books.push(savedBook)
+    setSearchState({ ...searchState, books })
+  }
+  const handleDeleteBook = (id) => {
+    Book.delete(id)
+      .then(() => {
+        let books = JSON.parse(JSON.stringify(searchState.books))
+        setSearchState({ ...searchState, books })
+      })
+      .catch(e => console.error(e))
+  }
 
   return (
     <container>
-          <div className={classes.grow}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography className={classes.title} variant="h6" noWrap>
-            Google Book Search
+      <div className={classes.grow}>
+        <AppBar position="static">
+          <Toolbar>
+            <HomeIcon />
+            <ArrowBackIcon />
+            <ArrowForwardIcon />
+            <Typography className={classes.title} variant="h6" noWrap>
+              Google Book Search
           </Typography>
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon/>
+            <div className={classes.search}>
+              <div className={classes.searchIcon}>
+                <SearchIcon />
+              </div>
+              <InputBase
+                placeholder="Book"
+                classes={{
+                  root: classes.inputRoot,
+                  input: classes.inputInput,
+                }}
+                inputProps={{ 'aria-label': 'search' }}
+              />
+              <Button variant="outlined" color="primary" onClick={handleBookSearch} >Search</Button>
             </div>
-            <InputBase
-              placeholder="Book"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-            <Button variant="outlined" color = "primary" onClick = {handleBookSearch} >Search</Button>
-          </div>
-          <div className={classes.grow} />
-          <div className={classes.sectionDesktop}>
-          </div>
-        </Toolbar>
-      </AppBar>
-    </div>
+            <div className={classes.grow} />
+            <div className={classes.sectionDesktop}>
+            </div>
+          </Toolbar>
+        </AppBar>
+      </div>
 
-    <div className={classes.root}>
-    <Typography variant="h6" className={classes.title}>
+      <div className={classes.root}>
+        <Typography variant="h6" className={classes.title}>
           My Library
           </Typography>
 
-    <List dense={dense}>
-              {generate(
-                <ListItem>
-                  <ListItemText
-                    primary= "primary"
-                    secondary={secondary ? 'Secondary text' : null}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton edge="end" aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>,
-              )}
+        <List dense={dense}>
+          <ListItem>
+            <ListItemText
+              primary="Harry Potter and the Cursed Child – Parts One and Two (Special Rehearsal Edition)"
+            />
+            <ListItemSecondaryAction>
+              <IconButton edge="end" aria-label="delete">
+                <DeleteIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+          <ListItem>
+
+            <ListItemText
+              primary="Harry Potter and the Philosopher's Stone"
+            />
+
+            <ListItemSecondaryAction>
+              <IconButton edge="end" aria-label="delete">
+                <DeleteIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>,
             </List>
-
-
-    </div>
+      </div>
     </container>
   )
 }
